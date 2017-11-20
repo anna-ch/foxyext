@@ -31,8 +31,29 @@ port.onMessage.addListener((response) => {
   text.setAttribute("class","speechtext");
   text.textContent = response.utterance;
 
-  let ID;
   let template;
+  let iframe;
+
+  const iframeSetup = (iframe, utterance, ID, imgPath) => {
+      template = `
+      <div class="panel-item-header">
+      <img src=${imgPath} height="20"
+      width="20" style="vertical-align: middle;">
+      <span class="speechtext">${utterance}</span>
+      <a href="/" class="panel-item-close">
+      <img src="resources/close-16.svg" alt="" style="float: right">
+      </a>
+      </div>
+      `;    
+        icon = '';
+        text = '';
+        iDiv.innerHTML = template;
+        iDiv.className = `${ID} panel-item`;
+        iframe.width = 300;
+        iframe.frameBorder = 0;
+        iframe.scrolling = 'no';
+        iframe.setAttribute('onload', 'resizeIframe(this)');
+  };
 
   switch(response.cmd) {
     case 'KEYWORD':
@@ -46,146 +67,65 @@ port.onMessage.addListener((response) => {
         },3000);
       }
       return;
-
     case 'TIMER':
-      ID = 'timercardiv';
-      template = `
-        <div class="panel-item-header">
-          <div class="panel-item-thumb">
-            <img src="resources/timer.svg" alt="">
-          </div>
-          <span class="speechtext">${response.utterance}</span>
-          <a href="/" class="panel-item-close"><img src="resources/close-16.svg" alt=""></a>
-        </div>
-      `;
-      iDiv.innerHTML = template;
-      iDiv.className = `${ID} panel-item`;
-
-      icon = '';
-      text = '';
-
-      var iframe = sidebar.createElement('iframe');
-      iframe.frameBorder = 0;
+      iframe = sidebar.createElement('iframe');
+      iframeSetup(iframe, response.utterance,
+        'timercardiv', './resources/timer.svg');
       iframe.className = 'panel-item-frame';
 
       if (response.param2) {
-        iframe.setAttribute("src", '/sidebar/paneltimer.html?duration='
+        iframe.setAttribute('src', '/sidebar/paneltimer.html?duration='
           + response.param + '&tag=' + response.param2);
       } else {
-        iframe.setAttribute("src", '/sidebar/paneltimer.html?duration='
+        iframe.setAttribute('src', '/sidebar/paneltimer.html?duration='
           + response.param);
       }
       break;
     case 'SPOTIFY':
-    template = `
-    <div class="panel-item-header">
-    <img src="./resources/Spotify_logo_without_text.svg" height="20" width="20"
-    style="vertical-align: middle;">
-    <span class="speechtext">${response.utterance}</span>
-    <a href="/" class="panel-item-close"><img src="resources/close-16.svg" alt="" style="float: right"></a>
-    </div>
-    `;    
-      icon = '';
-      text = '';
-      iDiv.innerHTML = template;
-      iDiv.className = "spotifycardiv panel-item";
-
-      var iframe = sidebar.createElement('iframe');
-      iframe.setAttribute("src", '/sidebar/spotify.html?playlist=' + response.param);
-      iframe.width = 300;
-      iframe.height = 100;
-      iframe.frameBorder = 0;
-      iframe.scrolling = "no";
+      iframe = sidebar.createElement('iframe');
+      iframeSetup(iframe, response.utterance,
+        'spotifycardiv', './resources/Spotify_logo_without_text.svg');
+      iframe.setAttribute('src', 
+        '/sidebar/spotify.html?playlist=' + response.param);
       break;
     case 'WEATHER':
-      ID = 'weathercardiv';
-      template = `
-        <div class="panel-item-header">
-          <div class="panel-item-thumb">
-            <img src="${findProperWeatherImage(response.param5)}" alt="">
-          </div>
-          <span class="speechtext">${response.utterance}</span>
-          <a href="/" class="panel-item-close"><img src="resources/close-16.svg" alt=""></a>
-        </div>
-      `;
-      iDiv.innerHTML = template;
-      iDiv.className = `${ID} panel-item`;
-
-      icon = '';
-      text = '';
-
       var localTime = response.localTime || {};
-      var iframe = sidebar.createElement('iframe');
-      iframe.frameBorder=0;
-      iframe.width = 300;
-      iframe.setAttribute("src", '/sidebar/panelweather.html?city='
+      iframe = sidebar.createElement('iframe');
+      iframeSetup(iframe, response.utterance,
+        'weathercardiv', findProperWeatherImage(response.param5));
+      iframe.setAttribute('src', '/sidebar/panelweather.html?city='
         + response.param + '&weather=' + response.param5 + '&temp=' +
         + response.param2 + '&min=' + response.param3 + '&max=' +
         + response.param4 + '&description=' + response.param5
         + '&time=' + localTime.time + '&day=' + localTime.day);
       break;
     case 'IOT':
-      iDiv.className = "iotcardiv";
       if(response.param2 == 'on') {
         // iDiv.style.backgroundImage = "url('resources/sunburst.png')";
       }
-
-      icon.src = "./resources/foxyhome.svg";
-
-      var iframe = sidebar.createElement('iframe');
-      iframe.frameBorder=0;
-      iframe.width = 300;
-      iframe.height = 185;
-      iframe.setAttribute("src", '/sidebar/paneliot.html?room='
+      iframe = sidebar.createElement('iframe');
+      iframeSetup(iframe, response.utterance,
+        'iotcardiv', './resources/foxyhome.svg');
+      iframe.setAttribute('src', '/sidebar/paneliot.html?room='
         + response.param + '&onoff=' + response.param2);
       break;
     case 'POCKET':
-    template = `
-    <div class="panel-item-header">
-    <img src="./resources/get_pocket1600.png" height="20" width="20"
-    style="vertical-align: middle;">
-    <span class="speechtext">${response.utterance}</span>
-    <a href="/" class="panel-item-close"><img src="resources/close-16.svg" alt="" style="float: right"></a>
-    </div>
-    `;
-    
-      icon = '';
-      text = '';
-      iDiv.innerHTML = template;
-      iDiv.className = "pocketcardiv panel-item";
-     // icon.src = './resources/get_pocket1600.png';
-      var iframe = sidebar.createElement('iframe');
-      iframe.setAttribute('onload', 'resizeIframe(this)');
-      iframe.frameBorder=0;
-      iframe.width = 300;
-      iframe.style.paddingLeft = '23px';
-
+      iframe = sidebar.createElement('iframe');
+      iframeSetup(iframe, response.utterance,
+        'pocketcardiv', 'resources/get_pocket1600.png');
       browser.tabs.query({ active: true})
         .then((tabs) => {
           port.postMessage(tabs[0].url);
           console.log('Before passing: ' + tabs[0].url);
-          iframe.setAttribute("src", '/sidebar/panelpocket.html?title=' +
+          iframe.setAttribute('src', '/sidebar/panelpocket.html?title=' +
             tabs[0].title + '&source=' + tabs[0].url);
         });
       break;
     case 'NPR':
-    template = `
-    <div class="panel-item-header">
-    <img src="./resources/npricon.png" height="20" width="20"
-    style="vertical-align: middle;">
-    <span class="speechtext">${response.utterance}</span>
-    <a href="/" class="panel-item-close"><img src="resources/close-16.svg" alt="" style="float: right"></a>
-    </div>
-    `;    
-      icon = '';
-      text = '';
-      iDiv.innerHTML = template;
-      iDiv.className = "nprcardiv panel-item";
-
-      var iframe = sidebar.createElement('iframe');
-      iframe.frameBorder=0;
-      iframe.width = 300;
-      iframe.setAttribute("src", '/sidebar/panelnpr.html');
+      iframe = sidebar.createElement('iframe');
+      iframeSetup(iframe, response.utterance,
+        'nprcardiv', 'resources/npricon.png');
+      iframe.setAttribute('src', '/sidebar/panelnpr.html');
       break;
     case 'GA':
       console.log('got GA request!!!');
@@ -193,26 +133,10 @@ port.onMessage.addListener((response) => {
       ga_uuid = response.param2;
       break;
     case 'FEEDBACK':
-    template = `
-    <div class="panel-item-header">
-    <img src="./resources/Check_mark.png" height="20" width="20"
-    style="vertical-align: middle;">
-    <span class="speechtext">${response.utterance}</span>
-    <a href="/" class="panel-item-close"><img src="resources/close-16.svg" alt="" style="float: right"></a>
-    </div>
-    `;    
-      icon = '';
-      text = '';
-      iDiv.innerHTML = template;
-      // icon.src = './resources/Check_mark.png';
-      // icon.height = 20;
-      // icon.width = 20;
-      iDiv.className = 'feedbackcardiv panel-item';
-
-      var iframe = sidebar.createElement('iframe');
-      iframe.frameBorder=0;
-      iframe.width = 300;
-      iframe.setAttribute("src", '/sidebar/panelfeedback.html');
+      iframe = sidebar.createElement('iframe');
+      iframeSetup(iframe, response.utterance,
+        'feedbackcardiv', 'resources/Check_mark.png');
+      iframe.setAttribute('src', '/sidebar/panelfeedback.html');
       break;
     case 'SHUTUP':
       toggleShutup();
@@ -239,24 +163,12 @@ port.onMessage.addListener((response) => {
       iframe.setAttribute('src', '/sidebar/bookmark/panelbookmark.html');
       break;
     default: //This is also 'NONE'. If we add another, may need to break it out
-    template = `
-    <div class="panel-item-header">
-    <img src="./resources/confused.svg" height="20" width="20"
-    style="vertical-align: middle;">
-    <a href="/" class="panel-item-close"><img src="resources/close-16.svg" alt="" style="float: right"></a>
-    </div>
-    `;
-      iDiv.className = "confusedcardiv panel-item";
-      iDiv.innerHTML = template;
       text.textContent = response.utterance.replace(/['"]+/g, '');
-
-      var iframe = sidebar.createElement('iframe');
-      iframe.frameBorder=0;
-      iframe.width = '99%';
-      iframe.setAttribute("src", '/sidebar/panelconfused.html?text='
+      iframe = sidebar.createElement('iframe');
+      iframeSetup(iframe, response.utterance,
+        'confusedcardiv', 'resources/confused.svg');
+      iframe.setAttribute('src', '/sidebar/panelconfused.html?text='
         + response.utterance);
-      icon = '';
-      text = '';
       break;
   }
   if (icon != '')
