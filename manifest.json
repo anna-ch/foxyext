@@ -26,7 +26,7 @@
       "default_icon": "icons/Foxy-SF.svg"
     },
 
-    "permissions": ["nativeMessaging",  "bookmarks", "tabs", "activeTab", "<all_urls>"],
+    "permissions": ["nativeMessaging",  "bookmarks", "tabs", "activeTab", "<all_urls>", "notifications"],
 
     "commands": {
       "_execute_sidebar_action": {

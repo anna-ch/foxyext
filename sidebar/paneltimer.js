@@ -10,7 +10,7 @@ function init() {
   var deadline = new Date(Date.parse(new Date()) + duration * 1000);
   initializeClock('clockdiv', deadline, tag);
   moveProgress.startProgress(duration * 10);
-  
+
   document.querySelector('.btn-reset').addEventListener('click', function(e) {
     e.preventDefault();
     var deadline = new Date(Date.parse(new Date()) + duration * 1000);
@@ -23,6 +23,20 @@ function init() {
     initializeClock('clockdiv', new Date(), tag);
     moveProgress.stopProgress();
   }, false);
+
+  const popupHandle = (message) => {
+    if (message.stop) {
+      initializeClock('clockdiv', new Date(), tag);
+      moveProgress.stopProgress();
+      return;
+  }
+  else if(message.reset) {
+    var deadline = new Date(Date.parse(new Date()) + duration * 1000);
+    initializeClock('clockdiv', deadline, tag);
+    moveProgress.startProgress(duration * 10);
+  }
+};
+  browser.runtime.onMessage.addListener(popupHandle);
 }
 
 function getParameterByName(name, url) {
@@ -69,7 +83,7 @@ function initializeClock(id, endtime, tag) {
       clearInterval(timeinterval);
       var audio = new Audio('chime.mp3');
       audio.play();
-      
+
       minutesSpan.innerHTML = '';
       secondsSpan.innerHTML = 'Done!';
       secondsSpan.style.paddingLeft = '20px';
@@ -81,38 +95,49 @@ function initializeClock(id, endtime, tag) {
 }
 
 var moveProgress = (function(interval) {
-  var elem = document.getElementById('progres-line');   
+  var elem = document.getElementById('progres-line');
   var width = 0;
-  var id; 
+  var id;
+  var timerTick;
   function startProgress(interval) {
     if (id !== undefined) {
       clearInterval(id);
+      timerTick = interval;
       width = 0;
       elem.style.width = '0%';
       elem.style.backgroundColor = '#0675d3';
       id = setInterval(frame, interval);
   }
     else if(!id) {
+      timerTick = interval;
       id = setInterval(frame, interval);
     }
   };
-  function frame() {    
+  function frame() {
     if (width >= 100) {
       elem.style.backgroundColor = '#30e60b';
       clearInterval(id);
     } else {
-      width++; 
-      elem.style.width = width + '%'; 
+      width++;
+      elem.style.width = width + '%';
     }
   };
-  function stopProgress() {    
+  function stopProgress() {
     if (id !== undefined) {
       clearInterval(id);
+      width = 100;
       elem.style.width = '100%';
       elem.style.backgroundColor = '#30e60b';
     }
-  }
+  };
+
+  const handleRequest = (request, sender, sendResponse) => {
+    if (request.time) {
+      sendResponse({ width: width, interval: timerTick });
+    }
+  };
+  browser.runtime.onMessage.addListener(handleRequest);
   return { startProgress: startProgress,
-           stopProgress:  stopProgress 
+           stopProgress:  stopProgress
   };
 })();
